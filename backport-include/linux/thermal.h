@@ -5,6 +5,40 @@
 
 #if LINUX_VERSION_IS_LESS(3,8,0)
 #include <linux/errno.h>
+#include <linux/err.h>
+
+enum thermal_trend {
+	THERMAL_TREND_STABLE, /* temperature is stable */
+	THERMAL_TREND_RAISING, /* temperature is raising */
+	THERMAL_TREND_DROPPING, /* temperature is dropping */
+	THERMAL_TREND_RAISE_FULL, /* apply highest cooling action */
+	THERMAL_TREND_DROP_FULL, /* apply lowest cooling action */
+};
+
+struct backport_thermal_zone_device_ops {
+	int (*bind) (struct thermal_zone_device *,
+		     struct thermal_cooling_device *);
+	int (*unbind) (struct thermal_zone_device *,
+		       struct thermal_cooling_device *);
+	int (*get_temp) (struct thermal_zone_device *, int *);
+	int (*get_mode) (struct thermal_zone_device *,
+			 enum thermal_device_mode *);
+	int (*set_mode) (struct thermal_zone_device *,
+		enum thermal_device_mode);
+	int (*get_trip_type) (struct thermal_zone_device *, int,
+		enum thermal_trip_type *);
+	int (*get_trip_temp) (struct thermal_zone_device *, int, int *);
+	int (*set_trip_temp) (struct thermal_zone_device *, int, int);
+	int (*get_trip_hyst) (struct thermal_zone_device *, int, int *);
+	int (*set_trip_hyst) (struct thermal_zone_device *, int, int);
+	int (*get_crit_temp) (struct thermal_zone_device *, int *);
+	int (*set_emul_temp) (struct thermal_zone_device *, int);
+	int (*get_trend) (struct thermal_zone_device *, int,
+			  enum thermal_trend *);
+	int (*notify) (struct thermal_zone_device *, int,
+		       enum thermal_trip_type);
+};
+#define thermal_zone_device_ops LINUX_BACKPORT(thermal_zone_device_ops)
 
 struct thermal_bind_params {
 	struct thermal_cooling_device *cdev;

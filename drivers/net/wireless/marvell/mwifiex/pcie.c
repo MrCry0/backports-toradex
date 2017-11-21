@@ -415,7 +415,7 @@ struct pci_error_handlers mwifiex_pcie_err_handler = {
 #if LINUX_VERSION_IS_GEQ(4,13,0)
 	.reset_prepare		= mwifiex_pcie_reset_prepare,
 	.reset_done		= mwifiex_pcie_reset_done,
-#else
+#elif LINUX_VERSION_IS_GEQ(3,16,0)
 	.reset_notify = mwifiex_pcie_reset_prepare_notify,
 #endif
 };

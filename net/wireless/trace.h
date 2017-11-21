@@ -12,6 +12,9 @@
 #include <net/cfg80211.h>
 #include "core.h"
 
+#ifndef BACKPORTS_TRACE
+#define BACKPORTS_TRACE
+
 #define MAC_ENTRY(entry_mac) __array(u8, entry_mac, ETH_ALEN)
 #define MAC_ASSIGN(entry_mac, given_mac) do {			     \
 	if (given_mac)						     \
@@ -213,6 +216,18 @@
 /*************************************************************
  *			rdev->ops traces		     *
  *************************************************************/
+#if LINUX_VERSION_IS_LESS(4,0,0)
+#undef TP_PROTO
+#define TP_PROTO(args...) args
+#undef DECLARE_TRACE
+#define DECLARE_TRACE(args...) 
+#undef DEFINE_EVENT
+#define DEFINE_EVENT(skip,name,proto,args...) inline void trace_##name(proto){}
+#undef TRACE_EVENT
+#define TRACE_EVENT(name,proto,args...) inline void trace_##name(proto){}
+#endif
+DEFINE_EVENT(skip, rdev_set_multicast_to_unicast,
+        TP_PROTO(struct wiphy *wiphy, struct net_device *dev, bool ena), a);
 
 TRACE_EVENT(rdev_suspend,
 	TP_PROTO(struct wiphy *wiphy, struct cfg80211_wowlan *wow),
@@ -277,6 +292,9 @@ TRACE_EVENT(rdev_scan,
 	),
 	TP_printk(WIPHY_PR_FMT, WIPHY_PR_ARG)
 );
+
+#undef DECLARE_EVENT_CLASS
+#define DECLARE_EVENT_CLASS(args...) 
 
 DECLARE_EVENT_CLASS(wiphy_only_evt,
 	TP_PROTO(struct wiphy *wiphy),
@@ -3154,25 +3172,7 @@ DEFINE_EVENT(wiphy_wdev_evt, rdev_abort_scan,
 	TP_PROTO(struct wiphy *wiphy, struct wireless_dev *wdev),
 	TP_ARGS(wiphy, wdev)
 );
-
-TRACE_EVENT(rdev_set_multicast_to_unicast,
-	TP_PROTO(struct wiphy *wiphy, struct net_device *netdev,
-		 const bool enabled),
-	TP_ARGS(wiphy, netdev, enabled),
-	TP_STRUCT__entry(
-		WIPHY_ENTRY
-		NETDEV_ENTRY
-		__field(bool, enabled)
-	),
-	TP_fast_assign(
-		WIPHY_ASSIGN;
-		NETDEV_ASSIGN;
-		__entry->enabled = enabled;
-	),
-	TP_printk(WIPHY_PR_FMT ", " NETDEV_PR_FMT ", unicast: %s",
-		  WIPHY_PR_ARG, NETDEV_PR_ARG,
-		  BOOL_TO_STR(__entry->enabled))
-);
+#endif /* BACKPORTS_TRACE */
 #endif /* !__RDEV_OPS_TRACE || TRACE_HEADER_MULTI_READ */
 
 #undef TRACE_INCLUDE_PATH

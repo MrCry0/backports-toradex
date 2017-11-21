@@ -12,7 +12,9 @@ static inline void add_device_randomness(const void *buf, unsigned int size)
 }
 #endif
 
-#if LINUX_VERSION_IS_LESS(3,8,0)
+/* #if LINUX_VERSION_IS_LESS(3,8,0) */
+/* already backported in our kernels */
+#if 0
 /* backports 496f2f9 */
 #define prandom_seed(_seed)		srandom32(_seed)
 #define prandom_u32()			random32()

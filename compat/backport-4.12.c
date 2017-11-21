@@ -109,8 +109,10 @@ static void extack_netlink_ack(struct sk_buff *in_skb, struct nlmsghdr *nlh,
 
 	skb = nlmsg_new(payload + tlvlen, GFP_KERNEL);
 	if (!skb) {
+#if LINUX_VERSION_IS_GEQ(3,10,0)
 		NETLINK_CB(in_skb).sk->sk_err = ENOBUFS;
 		NETLINK_CB(in_skb).sk->sk_error_report(NETLINK_CB(in_skb).sk);
+#endif
 		return;
 	}
 

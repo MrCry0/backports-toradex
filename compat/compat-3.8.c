@@ -356,6 +356,8 @@ bool hid_ignore(struct hid_device *hdev)
 }
 EXPORT_SYMBOL_GPL(hid_ignore);
 
+/* backported to our kernel */
+#if 0
 /**
  *	prandom_bytes - get the requested number of pseudo-random bytes
  *	@buf: where to copy the pseudo-random bytes to
@@ -386,6 +388,7 @@ void prandom_bytes(void *buf, int bytes)
 	}
 }
 EXPORT_SYMBOL_GPL(prandom_bytes);
+#endif
 
 #ifdef CONFIG_OF
 /**

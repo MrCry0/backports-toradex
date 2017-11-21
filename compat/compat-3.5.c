@@ -67,7 +67,9 @@ EXPORT_SYMBOL_GPL(overflowuid);
 EXPORT_SYMBOL_GPL(overflowgid);
 #endif
 
-#if IS_ENABLED(CONFIG_PTP_1588_CLOCK)
+/* #if IS_ENABLED(CONFIG_PTP_1588_CLOCK) */
+/* backported to all of our kernels */
+#if 0
 int ptp_clock_index(struct ptp_clock *ptp)
 {
 	return ptp->index;

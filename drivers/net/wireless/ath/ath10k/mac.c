@@ -7967,6 +7967,7 @@ struct ath10k_vif *ath10k_get_arvif(struct ath10k *ar, u32 vdev_id)
 #define WRD_METHOD "WRDD"
 #define WRDD_WIFI  (0x07)
 
+#ifdef CONFIG_ACPI
 static u32 ath10k_mac_wrdd_get_mcc(struct ath10k *ar, union acpi_object *wrdd)
 {
 	union acpi_object *mcc_pkg;
@@ -8050,6 +8051,12 @@ static int ath10k_mac_get_wrdd_regulatory(struct ath10k *ar, u16 *rd)
 	*rd |= COUNTRY_ERD_FLAG;
 	return 0;
 }
+#else
+static int ath10k_mac_get_wrdd_regulatory(struct ath10k *ar, u16 *rd)
+{
+    return -EOPNOTSUPP;
+}
+#endif
 
 static int ath10k_mac_init_rd(struct ath10k *ar)
 {

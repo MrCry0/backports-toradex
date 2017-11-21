@@ -571,6 +571,7 @@ config USB_NET_KALMIA
 	  module will be called kalmia.
 
 config USB_NET_QMI_WWAN
+    depends on !KERNEL_3_10
 	tristate "QMI WWAN driver for Qualcomm MSM based 3G and LTE modems"
 	depends on m
 	depends on USB_USBNET

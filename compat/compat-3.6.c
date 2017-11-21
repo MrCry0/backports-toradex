@@ -14,6 +14,7 @@
 
 /* whoopsie ! */
 #ifndef CONFIG_COMMON_CLK
+#ifndef CONFIG_ARCH_TEGRA
 int clk_enable(struct clk *clk)
 {
 	return 0;
@@ -24,4 +25,5 @@ void clk_disable(struct clk *clk)
 {
 }
 EXPORT_SYMBOL_GPL(clk_disable);
+#endif
 #endif
