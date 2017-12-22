@@ -63,4 +63,14 @@ static inline void sk_clear_bit(int nr, struct sock *sk)
 }
 #endif /* < 4.5 */
 
+#if LINUX_VERSION_IS_LESS(4,7,0)
+/* no reclassification while locks are held */
+static inline bool sock_allow_reclassification(const struct sock *csk)
+{
+	struct sock *sk = (struct sock *)csk;
+
+	return !sk->sk_lock.owned && !spin_is_locked(&sk->sk_lock.slock);
+}
+#endif /* < 4.7 */
+
 #endif /* __BACKPORT_NET_SOCK_H */

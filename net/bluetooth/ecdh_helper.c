@@ -23,7 +23,11 @@
 #include "ecdh_helper.h"
 
 #include <linux/scatterlist.h>
+#if LINUX_VERSION_IS_LESS(4,8,0)
+#include <crypto/backport-kpp.h>
+#else
 #include <crypto/kpp.h>
+#endif
 #include <crypto/ecdh.h>
 
 struct ecdh_completion {

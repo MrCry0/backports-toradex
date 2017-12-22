@@ -351,7 +351,7 @@ static void rfcomm_dlc_unlink(struct rfcomm_dlc *d)
 {
 	struct rfcomm_session *s = d->session;
 
-	BT_DBG("dlc %p refcnt %d session %p", d, refcount_read(&d->refcnt), s);
+	BT_DBG("dlc %p refcnt %d session %p", d, refcount_read((const refcount_t *)&d->refcnt), s);
 
 	list_del(&d->list);
 	d->session = NULL;
@@ -872,7 +872,7 @@ static int rfcomm_queue_disc(struct rfcomm_dlc *d)
 	if (!skb)
 		return -ENOMEM;
 
-	cmd = __skb_put(skb, sizeof(*cmd));
+	cmd = (void *)__skb_put(skb, sizeof(*cmd));
 	cmd->addr = d->addr;
 	cmd->ctrl = __ctrl(RFCOMM_DISC, 1);
 	cmd->len  = __len8(0);

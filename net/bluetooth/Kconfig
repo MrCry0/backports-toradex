@@ -14,7 +14,8 @@ menuconfig BT
 	depends on CRYPTO_CMAC
 	depends on CRYPTO_ECB
 	depends on CRYPTO_SHA256
-	depends on CRYPTO_ECDH
+    depends on CRYPTO_ECDH
+    depends on !KERNEL_4_7
 	help
 	  Bluetooth is low-cost, low-power, short-range wireless technology.
 	  It was designed as a replacement for cables and other short-range

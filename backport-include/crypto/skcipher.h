@@ -441,6 +441,105 @@ static inline void skcipher_request_set_crypt(
 }
 #endif /* < 4.3 */
 
+#if LINUX_VERSION_IS_LESS(4,8,0) 
+#define skcipher_walk LINUX_BACKPORT(skcipher_walk)
+struct skcipher_walk {
+	union {
+		struct {
+			struct page *page;
+			unsigned long offset;
+		} phys;
+
+		struct {
+			u8 *page;
+			void *addr;
+		} virt;
+	} src, dst;
+
+	struct scatter_walk in;
+	unsigned int nbytes;
+
+	struct scatter_walk out;
+	unsigned int total;
+
+	struct list_head buffers;
+
+	u8 *page;
+	u8 *buffer;
+	u8 *oiv;
+	void *iv;
+
+	unsigned int ivsize;
+
+	int flags;
+	unsigned int blocksize;
+	unsigned int stride;
+	unsigned int alignmask;
+};
+
+struct skcipher_alg {
+	int (*setkey)(struct crypto_skcipher *tfm, const u8 *key,
+	              unsigned int keylen);
+	int (*encrypt)(struct skcipher_request *req);
+	int (*decrypt)(struct skcipher_request *req);
+	int (*init)(struct crypto_skcipher *tfm);
+	void (*exit)(struct crypto_skcipher *tfm);
+
+	unsigned int min_keysize;
+	unsigned int max_keysize;
+	unsigned int ivsize;
+	unsigned int chunksize;
+	unsigned int walksize;
+
+	struct crypto_alg base;
+};
+
+struct skcipher_instance {
+	void (*free)(struct skcipher_instance *inst);
+	union {
+		struct {
+			char head[offsetof(struct skcipher_alg, base)];
+			struct crypto_instance base;
+		} s;
+		struct skcipher_alg alg;
+	};
+};
+
+static inline unsigned int crypto_skcipher_alg_walksize(
+	struct skcipher_alg *alg)
+{
+	if ((alg->base.cra_flags & CRYPTO_ALG_TYPE_MASK) ==
+	    CRYPTO_ALG_TYPE_BLKCIPHER)
+		return alg->base.cra_blocksize;
+
+	if (alg->base.cra_ablkcipher.encrypt)
+		return alg->base.cra_blocksize;
+
+	return alg->walksize;
+}
+
+static inline struct skcipher_alg *crypto_skcipher_alg(
+	struct crypto_skcipher *tfm)
+{
+	return container_of(crypto_skcipher_tfm(tfm)->__crt_alg,
+			    struct skcipher_alg, base);
+}
+
+static inline unsigned int crypto_skcipher_walksize(
+	struct crypto_skcipher *tfm)
+{
+	return crypto_skcipher_alg_walksize(crypto_skcipher_alg(tfm));
+}
+
+static inline struct crypto_instance *skcipher_crypto_instance(
+	struct skcipher_instance *inst)
+{
+	return &inst->s.base;
+}
+
+#define CRYPTO_ALG_TYPE_SKCIPHER CRYPTO_ALG_TYPE_ABLKCIPHER
+#endif /* < 4.8 */
+
 #if LINUX_VERSION_IS_LESS(4,6,0)
 #define skcipher_request_zero LINUX_BACKPORT(skcipher_request_zero)
 static inline void skcipher_request_zero(struct skcipher_request *req)

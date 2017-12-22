@@ -113,6 +113,12 @@ config BPAUTO_CRYPTO_SKCIPHER
 	#c-file crypto/skcipher.c
 	#module-name skcipher
 
+config BPAUTO_CRYPTO_KPP2
+    tristate
+    depends on m
+    depends on KERNEL_4_7
+    default y if BACKPORTED_BT
+
 config BPAUTO_WANT_DEV_COREDUMP
 	bool
 
@@ -167,6 +173,12 @@ config BPAUTO_REFCOUNT
 	depends on KERNEL_4_11
 	#h-file linux/refcount.h
 	#c-file lib/refcount.c
+
+config BPAUTO_IOV_ITER
+	bool
+	default y
+	depends on !KERNEL_4_6
+	#c-file lib/iov_iter.c
 
 config BPAUTO_SYSTEM_DATA_VERIFICATION
 	bool

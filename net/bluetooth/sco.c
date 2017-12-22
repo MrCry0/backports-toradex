@@ -623,9 +623,13 @@ done:
 	release_sock(sk);
 	return err;
 }
-
+#if LINUX_VERSION_IS_LESS(4,12,0)
+static int sco_sock_accept(struct socket *sock, struct socket *newsock,
+			   int flags)
+#else
 static int sco_sock_accept(struct socket *sock, struct socket *newsock,
 			   int flags, bool kern)
+#endif
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	struct sock *sk = sock->sk, *ch;

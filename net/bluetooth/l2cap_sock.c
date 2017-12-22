@@ -300,9 +300,13 @@ done:
 	release_sock(sk);
 	return err;
 }
-
+#if LINUX_VERSION_IS_LESS(4,12,0)
+static int l2cap_sock_accept(struct socket *sock, struct socket *newsock,
+			     int flags)
+#else
 static int l2cap_sock_accept(struct socket *sock, struct socket *newsock,
 			     int flags, bool kern)
+#endif
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	struct sock *sk = sock->sk, *nsk;
@@ -1028,7 +1032,11 @@ static int l2cap_sock_recvmsg(struct socket *sock, struct msghdr *msg,
 		goto done;
 
 	if (pi->rx_busy_skb) {
+#if LINUX_VERSION_IS_GEQ(4,7,0)
 		if (!__sock_queue_rcv_skb(sk, pi->rx_busy_skb))
+#else
+		if (!sock_queue_rcv_skb(sk, pi->rx_busy_skb))
+#endif
 			pi->rx_busy_skb = NULL;
 		else
 			goto done;
@@ -1297,7 +1305,11 @@ static int l2cap_sock_recv_cb(struct l2cap_chan *chan, struct sk_buff *skb)
 			goto done;
 	}
 
+#if LINUX_VERSION_IS_GEQ(4,7,0)
 	err = __sock_queue_rcv_skb(sk, skb);
+#else
+	err = sock_queue_rcv_skb(sk, skb);
+#endif
 
 	/* For ERTM, handle one skb that doesn't fit into the recv
 	 * buffer.  This is important to do because the data frames

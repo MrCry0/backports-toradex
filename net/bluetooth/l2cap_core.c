@@ -33,7 +33,7 @@
 #include <linux/debugfs.h>
 #include <linux/crc16.h>
 #include <linux/filter.h>
-
+#include <linux/uio.h>
 #include <net/bluetooth/bluetooth.h>
 #include <net/bluetooth/hci_core.h>
 #include <net/bluetooth/l2cap.h>
@@ -2117,6 +2117,42 @@ static void l2cap_send_ack(struct l2cap_chan *chan)
 		if (frames_to_ack)
 			__set_ack_timer(chan);
 	}
+}
+
+extern void __compiletime_error("copy source size is too small")
+__bad_copy_from(void);
+extern void __compiletime_error("copy destination size is too small")
+__bad_copy_to(void);
+
+static inline void copy_overflow(int size, unsigned long count)
+{
+	WARN(1, "Buffer overflow detected (%d < %lu)!\n", size, count);
+}
+
+static __always_inline bool
+check_copy_size(const void *addr, size_t bytes, bool is_source)
+{
+	int sz = __compiletime_object_size(addr);
+	if (unlikely(sz >= 0 && sz < bytes)) {
+		if (!__builtin_constant_p(bytes))
+			copy_overflow(sz, bytes);
+		else if (is_source)
+			__bad_copy_from();
+		else
+			__bad_copy_to();
+		return false;
+	}
+	check_object_size(addr, bytes, is_source);
+	return true;
+}
+
+static __always_inline __must_check
+bool copy_from_iter_full(void *addr, size_t bytes, struct iov_iter *i)
+{
+	if (unlikely(!check_copy_size(addr, bytes, false)))
+		return false;
+	else
+		return _copy_from_iter_full(addr, bytes, i);
 }
 
 static inline int l2cap_skbuff_fromiovec(struct l2cap_chan *chan,

@@ -17,6 +17,7 @@
 #include <linux/trace_seq.h>
 #include <linux/ftrace_event.h>
 #include <asm/unaligned.h>
+#include <linux/slab.h>
 
 static __always_inline long __get_user_pages_locked(struct task_struct *tsk,
 						struct mm_struct *mm,
@@ -375,3 +376,35 @@ ftrace_print_array_seq(struct trace_seq *p, const void *buf, int buf_len,
 	return ret;
 }
 EXPORT_SYMBOL(ftrace_print_array_seq);
+
+/**
+ * kfree_const - conditionally free memory
+ * @x: pointer to the memory
+ *
+ * Function calls kfree only if @x is not in .rodata section.
+ */
+void kfree_const(const void *x)
+{
+	/* if (!is_kernel_rodata((unsigned long)x)) */
+		kfree(x);
+}
+EXPORT_SYMBOL(kfree_const);
+
+/*
+* kstrdup_const - conditionally duplicate an existing const string
+* @s: the string to duplicate
+* @gfp: the GFP mask used in the kmalloc() call when allocating memory
+*
+* Function returns source string if it is in .rodata section otherwise it
+* fallbacks to kstrdup.
+* Strings allocated by kstrdup_const should be freed by kfree_const.
+*/
+
+const char *kstrdup_const(const char *s, gfp_t gfp)
+{
+/*       if (is_kernel_rodata((unsigned long)s))
+ *             return s;
+ */
+       return kstrdup(s, gfp);
+}
+EXPORT_SYMBOL(kstrdup_const);

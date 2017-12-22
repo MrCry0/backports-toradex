@@ -152,3 +152,14 @@ void tso_start(struct sk_buff *skb, struct tso_t *tso)
 	}
 }
 EXPORT_SYMBOL(tso_start);
+
+const char *kvasprintf_const(gfp_t gfp, const char *fmt, va_list ap)
+{
+	if (!strchr(fmt, '%'))
+		return kstrdup_const(fmt, gfp);
+	if (!strcmp(fmt, "%s"))
+		return kstrdup_const(va_arg(ap, const char*), gfp);
+	return kvasprintf(gfp, fmt, ap);
+}
+EXPORT_SYMBOL(kvasprintf_const);
+

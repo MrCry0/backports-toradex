@@ -48,7 +48,7 @@ static inline u32 skcipher_request_flags(struct skcipher_request *req)
 {
 	return req->base.flags;
 }
-
+#if LINUX_VERSION_IS_GEQ(4,8,0)
 enum {
 	SKCIPHER_WALK_PHYS = 1 << 0,
 	SKCIPHER_WALK_SLOW = 1 << 1,
@@ -593,6 +593,35 @@ int skcipher_walk_aead_decrypt(struct skcipher_walk *walk,
 }
 EXPORT_SYMBOL_GPL(skcipher_walk_aead_decrypt);
 
+#endif /* LINUX_VERSION_IS_GEQ(4,8,0) */
+
+#if LINUX_VERSION_IS_LESS(4,2,0)
+
+unsigned int crypto_alg_extsize(struct crypto_alg *alg)
+{
+	return alg->cra_ctxsize +
+	       (alg->cra_alignmask & ~(crypto_tfm_ctx_alignment() - 1));
+}
+EXPORT_SYMBOL_GPL(crypto_alg_extsize);
+
+int crypto_type_has_alg(const char *name, const struct crypto_type *frontend,
+			u32 type, u32 mask)
+{
+#if 0
+	int ret = 0;
+	struct crypto_alg *alg = crypto_find_alg(name, frontend, type, mask);
+
+	if (!IS_ERR(alg)) {
+		crypto_mod_put(alg);
+		ret = 1;
+	}
+#endif
+	return -EINVAL;
+}
+EXPORT_SYMBOL_GPL(crypto_type_has_alg);
+
+#endif
+
 static unsigned int crypto_skcipher_extsize(struct crypto_alg *alg)
 {
 	if (alg->cra_type == &crypto_blkcipher_type)
@@ -922,7 +951,9 @@ static int crypto_skcipher_report(struct sk_buff *skb, struct crypto_alg *alg)
 static const struct crypto_type crypto_skcipher_type2 = {
 	.extsize = crypto_skcipher_extsize,
 	.init_tfm = crypto_skcipher_init_tfm,
+#if LINUX_VERSION_IS_GEQ(4,3,0)
 	.free = crypto_skcipher_free_instance,
+#endif
 #ifdef CONFIG_PROC_FS
 	.show = crypto_skcipher_show,
 #endif
@@ -936,8 +967,10 @@ static const struct crypto_type crypto_skcipher_type2 = {
 int crypto_grab_skcipher(struct crypto_skcipher_spawn *spawn,
 			  const char *name, u32 type, u32 mask)
 {
+#if 0
 	spawn->base.frontend = &crypto_skcipher_type2;
 	return crypto_grab_spawn(&spawn->base, name, type, mask);
+#endif
 }
 EXPORT_SYMBOL_GPL(crypto_grab_skcipher);
 

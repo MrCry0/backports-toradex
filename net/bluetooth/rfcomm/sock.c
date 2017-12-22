@@ -205,7 +205,7 @@ static void rfcomm_sock_kill(struct sock *sk)
 	if (!sock_flag(sk, SOCK_ZAPPED) || sk->sk_socket)
 		return;
 
-	BT_DBG("sk %p state %d refcnt %d", sk, sk->sk_state, refcount_read(&sk->sk_refcnt));
+	BT_DBG("sk %p state %d refcnt %d", sk, sk->sk_state, refcount_read((const refcount_t *)&sk->sk_refcnt));
 
 	/* Kill poor orphan */
 	bt_sock_unlink(&rfcomm_sk_list, sk);
@@ -480,8 +480,12 @@ done:
 	return err;
 }
 
+#if LINUX_VERSION_IS_LESS(4,12,0)
+static int rfcomm_sock_accept(struct socket *sock, struct socket *newsock, int flags)
+#else
 static int rfcomm_sock_accept(struct socket *sock, struct socket *newsock, int flags,
 			      bool kern)
+#endif
 {
 	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 	struct sock *sk = sock->sk, *nsk;

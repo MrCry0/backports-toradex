@@ -251,4 +251,41 @@ int mii_ethtool_get_link_ksettings(struct mii_if_info *mii,
 	return 0;
 }
 EXPORT_SYMBOL(mii_ethtool_get_link_ksettings);
+
+void *kvmalloc_node(size_t size, gfp_t flags, int node)
+{
+	gfp_t kmalloc_flags = flags;
+	void *ret;
+
+	/*
+	 * vmalloc uses GFP_KERNEL for some internal allocations (e.g page tables)
+	 * so the given set of flags has to be compatible.
+	 */
+	WARN_ON_ONCE((flags & GFP_KERNEL) != GFP_KERNEL);
+
+	/*
+	 * We want to attempt a large physically contiguous block first because
+	 * it is less likely to fragment multiple larger blocks and therefore
+	 * contribute to a long term fragmentation less than vmalloc fallback.
+	 * However make sure that larger requests are not too disruptive - no
+	 * OOM killer and no allocation failure warnings as we have a fallback.
+	 */
+	if (size > PAGE_SIZE) {
+		kmalloc_flags |= __GFP_NOWARN;
+		kmalloc_flags |= __GFP_NORETRY;
+	}
+
+	ret = kmalloc_node(size, kmalloc_flags, node);
+
+	/*
+	 * It doesn't really make sense to fallback to vmalloc for sub page
+	 * requests
+	 */
+	if (ret || size <= PAGE_SIZE)
+		return ret;
+
+	return vmalloc(size);
+}
+EXPORT_SYMBOL(kvmalloc_node);
+
 #endif /* LINUX_VERSION_IS_GEQ(4,6,0) */

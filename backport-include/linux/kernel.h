@@ -206,6 +206,10 @@ int __must_check kstrtobool_from_user(const char __user *s, size_t count, bool *
 
 #endif
 
+#if LINUX_VERSION_IS_LESS(4,5,0)
+const char *kvasprintf_const(gfp_t gfp, const char *fmt, va_list args);
+#endif /* < 4.4 */
+
 #if LINUX_VERSION_IS_LESS(3,14,0)
 static inline u32 reciprocal_scale(u32 val, u32 ep_ro)
 {

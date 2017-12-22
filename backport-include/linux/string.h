@@ -29,4 +29,8 @@ void memzero_explicit(void *s, size_t count);
 ssize_t strscpy(char *dest, const char *src, size_t count);
 #endif
 
+#if LINUX_VERSION_IS_LESS(4,0,0)
+extern void kfree_const(const void *x);
+extern const char *kstrdup_const(const char *s, gfp_t gfp);
+#endif
 #endif /* __BACKPORT_LINUX_STRING_H */
