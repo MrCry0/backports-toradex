@@ -19,7 +19,7 @@ long get_user_pages_locked(unsigned long start, unsigned long nr_pages,
 #define get_user_pages_unlocked LINUX_BACKPORT(get_user_pages_unlocked)
 long get_user_pages_unlocked(unsigned long start, unsigned long nr_pages,
 		    int write, int force, struct page **pages);
-#elif LINUX_VERSION_IS_LESS(4,6,0)
+#elif LINUX_VERSION_IS_LESS(4,6,0) && !LINUX_VERSION_IN_RANGE(4,4,168, 4,5,0)
 static inline
 long backport_get_user_pages_locked(unsigned long start, unsigned long nr_pages,
 		    int write, int force, struct page **pages, int *locked)
@@ -39,7 +39,7 @@ long backport_get_user_pages_unlocked(unsigned long start, unsigned long nr_page
 #define get_user_pages_unlocked LINUX_BACKPORT(get_user_pages_unlocked)
 #endif
 
-#if LINUX_VERSION_IS_LESS(4,6,0)
+#if LINUX_VERSION_IS_LESS(4,6,0) && !LINUX_VERSION_IN_RANGE(4,4,168, 4,5,0)
 static inline
 long backport_get_user_pages(unsigned long start, unsigned long nr_pages,
 			    int write, int force, struct page **pages,
