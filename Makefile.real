@@ -87,11 +87,14 @@ backport-include/backport/autoconf.h: .config Kconfig.versions Kconfig.kernel
 modules: backport-include/backport/autoconf.h
 	@$(MAKE) -f Makefile.build modules
 
-.PHONY: install
-install: modules
+.PHONY: mod_install
+mod_install: modules
 	@$(MAKE) -C $(KLIB_BUILD) M=$(BACKPORT_DIR)			\
 		INSTALL_MOD_DIR=$(KMODDIR) $(KMODPATH_ARG)		\
 		modules_install
+
+.PHONY: full_mod_install
+full_mod_install: mod_install
 	@./scripts/blacklist.sh $(KLIB)/ $(KLIB)/$(KMODDIR)
 	@./scripts/compress_modules.sh $(KLIB)/$(KMODDIR)
 	@./scripts/check_depmod.sh
@@ -103,7 +106,7 @@ install: modules
 	@echo
 
 .PHONY: modules_install
-modules_install: install
+modules_install: full_mod_install
 
 .PHONY: uninstall
 uninstall:
